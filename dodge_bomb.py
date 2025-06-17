@@ -66,22 +66,31 @@ def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
     bb_accs = [a for a in range(1, 11)]  # 加速度リスト
     return bb_imgs, bb_accs
 
-
 def get_kk_img(sum_mv: tuple[int, int]) -> pg.Surface:
-    global kk_imgs_dict
-    if not kk_imgs_dict:
-        base_kk_img = pg.image.load("fig/3.png") 
-        base_kk_img = pg.transform.rotozoom(base_kk_img, 0, 0.9)
-        kk_imgs_dict[(0, 0)] = base_kk_img
-        kk_imgs_dict[(5, 0)] = base_kk_img
-        kk_imgs_dict[(5, 5)] = pg.transform.rotozoom(base_kk_img, -45, 1.0)
-        kk_imgs_dict[(0, 5)] = pg.transform.rotozoom(base_kk_img, -90, 1.0) 
-        kk_imgs_dict[(-5, 5)] = pg.transform.rotozoom(base_kk_img, -135, 1.0) 
-        kk_imgs_dict[(-5, 0)] = pg.transform.flip(base_kk_img, True, False)
-        kk_imgs_dict[(-5, -5)] = pg.transform.rotozoom(kk_imgs_dict[(-5, 0)], 45, 1.0)
-        kk_imgs_dict[(0, -5)] = pg.transform.rotozoom(base_kk_img, 90, 1.0) 
-        kk_imgs_dict[(5, -5)] = pg.transform.rotozoom(base_kk_img, 45, 1.0) 
-        return kk_imgs_dict.get(sum_mv, kk_imgs_dict[(0, 0)])
+    """
+    移動量の合計値タプルに対応する向きに元の画像を回転させたSurfaceを返す
+    """
+    base_img = pg.image.load("fig/3.png")
+    
+    angle = 0
+    if sum_mv[0] == 0 and sum_mv[1] == -5:
+        angle = 90
+    elif sum_mv[0] == 5 and sum_mv[1] == -5:
+        angle = 45
+    elif sum_mv[0] == 5 and sum_mv[1] == 0:
+        angle = 0
+    elif sum_mv[0] == 5 and sum_mv[1] == 5:
+        angle = -45
+    elif sum_mv[0] == 0 and sum_mv[1] == 5:
+        angle = -90
+    elif sum_mv[0] == -5 and sum_mv[1] == 5:
+        angle = -135
+    elif sum_mv[0] == -5 and sum_mv[1] == 0:
+        angle = 180
+    elif sum_mv[0] == -5 and sum_mv[1] == -5:
+        angle = 135
+    
+    return pg.transform.rotozoom(base_img, angle, 1.0)
 
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
