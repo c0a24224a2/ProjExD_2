@@ -28,8 +28,8 @@ def check_bound(rct: pg.Rect) -> tuple[bool, bool]:
     return yoko, tate  # 横方向，縦方向の画面内判定結果を返す
 def gameover(screen: pg.Surface) -> None:
     """
-    ゲームオーバー時に，「Game Over」と表示し，
-    泣いているこうかとん画像を貼り付ける
+    ゲームオーバー時に，半透明の黒い画面上に「Game Over」と表
+    示し，泣いているこうかとん画像を貼り付ける関数
     """
     overlay = pg.Surface((WIDTH, HEIGHT))
     overlay.fill((0, 0, 0))
@@ -47,6 +47,20 @@ def gameover(screen: pg.Surface) -> None:
     screen.blit(kk_img, right_kk_pos)
     pg.display.update()
     time.sleep(5)
+def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
+    """
+    サイズの異なる爆弾Surfaceを要素としたリストと加速度リスト
+    を返す
+    """
+    bb_imgs = []
+    for r in range(1, 11):  
+        bb_img = pg.Surface((20*r, 20*r))
+        bb_img.set_colorkey((0, 0, 0))
+        pg.draw.circle(bb_img, (255, 0, 0), (10*r, 10*r), 10*r)
+        bb_imgs.append(bb_img)
+    
+    bb_accs = [a for a in range(1, 11)]  # 加速度リスト
+    return bb_imgs, bb_accs
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -54,6 +68,8 @@ def main():
     kk_img = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
     kk_rct = kk_img.get_rect()
     kk_rct.center = 300, 200
+    bb_imgs, bb_accs = init_bb_imgs()
+    bb_img = bb_imgs[0]
     bb_img = pg.Surface((20, 20))   # 空のSurfaceを作る（爆弾用）
     pg.draw.circle(bb_img,(255,0,0),(10,10),10)   # 赤い円を描く
     bb_img.set_colorkey((0, 0, 0))   # 黒を透明色に設定
@@ -90,7 +106,10 @@ def main():
         if check_bound(kk_rct) != (True,True):
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1])
         screen.blit(kk_img, kk_rct)
-        bb_rct.move_ip(vx, vy)  # 爆弾の移動
+        avx = vx * bb_accs[min(tmr//500, 9)]
+        avy = vy * bb_accs[min(tmr//500, 9)]
+        bb_img = bb_imgs[min(tmr//500, 9)]
+        bb_rct.move_ip(avx, avy)  # 爆弾の移動
         yoko, tate = check_bound(bb_rct)
         if not yoko:  # 横方向にはみ出ていたら
             vx *= -1
