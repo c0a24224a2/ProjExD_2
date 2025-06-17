@@ -34,7 +34,7 @@ def gameover(screen: pg.Surface) -> None:
     示し，泣いているこうかとん画像を貼り付ける関数
     """
     overlay = pg.Surface((WIDTH, HEIGHT))
-    pg.Rect(0,0,WIDTH,HEIGHT)
+    pg.Rect(0,0,WIDTH,HEIGHT) 
     overlay.set_alpha(200)  # 半透明設定
     screen.blit(overlay, (0, 0))
     kk_img = pg.transform.rotozoom(pg.image.load("fig/8.png"), 0, 1.0)
