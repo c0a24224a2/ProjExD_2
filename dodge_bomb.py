@@ -26,13 +26,15 @@ def check_bound(rct: pg.Rect) -> tuple[bool, bool]:
     if rct.top < 0 or HEIGHT < rct.bottom:   # 縦方向の画面外判定
         tate = False
     return yoko, tate  # 横方向，縦方向の画面内判定結果を返す
+
+
 def gameover(screen: pg.Surface) -> None:
     """
     ゲームオーバー時に，半透明の黒い画面上に「Game Over」と表
     示し，泣いているこうかとん画像を貼り付ける関数
     """
     overlay = pg.Surface((WIDTH, HEIGHT))
-    overlay.fill((0, 0, 0))
+    pg.Rect(0,0,WIDTH,HEIGHT)
     overlay.set_alpha(200)  # 半透明設定
     screen.blit(overlay, (0, 0))
     kk_img = pg.transform.rotozoom(pg.image.load("fig/8.png"), 0, 1.0)
@@ -47,6 +49,8 @@ def gameover(screen: pg.Surface) -> None:
     screen.blit(kk_img, right_kk_pos)
     pg.display.update()
     time.sleep(5)
+
+
 def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
     """
     サイズの異なる爆弾Surfaceを要素としたリストと加速度リスト
@@ -61,6 +65,24 @@ def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
     
     bb_accs = [a for a in range(1, 11)]  # 加速度リスト
     return bb_imgs, bb_accs
+
+
+def get_kk_img(sum_mv: tuple[int, int]) -> pg.Surface:
+    global kk_imgs_dict
+    if not kk_imgs_dict:
+        base_kk_img = pg.image.load("fig/3.png") 
+        base_kk_img = pg.transform.rotozoom(base_kk_img, 0, 0.9)
+        kk_imgs_dict[(0, 0)] = base_kk_img
+        kk_imgs_dict[(5, 0)] = base_kk_img
+        kk_imgs_dict[(5, 5)] = pg.transform.rotozoom(base_kk_img, -45, 1.0)
+        kk_imgs_dict[(0, 5)] = pg.transform.rotozoom(base_kk_img, -90, 1.0) 
+        kk_imgs_dict[(-5, 5)] = pg.transform.rotozoom(base_kk_img, -135, 1.0) 
+        kk_imgs_dict[(-5, 0)] = pg.transform.flip(base_kk_img, True, False)
+        kk_imgs_dict[(-5, -5)] = pg.transform.rotozoom(kk_imgs_dict[(-5, 0)], 45, 1.0)
+        kk_imgs_dict[(0, -5)] = pg.transform.rotozoom(base_kk_img, 90, 1.0) 
+        kk_imgs_dict[(5, -5)] = pg.transform.rotozoom(base_kk_img, 45, 1.0) 
+        return kk_imgs_dict.get(sum_mv, kk_imgs_dict[(0, 0)])
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -105,6 +127,7 @@ def main():
         kk_rct.move_ip(sum_mv)
         if check_bound(kk_rct) != (True,True):
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1])
+            kk_img = get_kk_img(tuple(sum_mv))
         screen.blit(kk_img, kk_rct)
         avx = vx * bb_accs[min(tmr//500, 9)]
         avy = vy * bb_accs[min(tmr//500, 9)]
